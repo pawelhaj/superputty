@@ -22,7 +22,7 @@ namespace SuperPutty
     /// <summary>
     /// Represents the SuperPuTTY application itself
     /// </summary>
-    public static class SuperPuTTY 
+    public static class SuperPuTTY
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(SuperPuTTY));
 
@@ -59,7 +59,7 @@ namespace SuperPutty
 
                 // load data                
                 LoadLayouts();
-                LoadSessions();                
+                LoadSessions();
 
                 // determine starting layout, if any.  CLI has priority
                 if (CommandLine.IsValid)
@@ -206,7 +206,7 @@ namespace SuperPutty
                     Directory.CreateDirectory(LayoutsDir);
                     layouts.Add(autoRestore);
                 }
-            }            
+            }
         }
 
         public static void LoadLayout(LayoutData layout)
@@ -287,27 +287,30 @@ namespace SuperPutty
         public static void LoadSessions()
         {
             string fileName = SessionsFileName;
-            Log.InfoFormat($"Loading all sessions.  file={fileName}");
-
+            Log.InfoFormat($"Loading all sessions. file={fileName}");
             try
             {
                 if (File.Exists(fileName))
                 {
                     List<SessionData> sessions = SessionData.LoadSessionsFromFile(fileName);
-                    // remove old
+
                     sessionsMap.Clear();
                     sessionsList.Clear();
 
                     foreach (SessionData session in sessions)
                     {
-                        AddSession(session);
+                        if (session.SessionId != null)
+                        {
+                            sessionsMap[session.SessionId] = session;
+                            sessionsList.Add(session);
+                        }
                     }
+                    Log.InfoFormat($"Successfully loaded {sessionsList.Count} sessions in O(N) time.");
                 }
                 else
                 {
-                    Log.WarnFormat($"Sessions file does not exist, nothing loaded.  file={fileName}");
+                    Log.WarnFormat($"Sessions file does not exist, nothing loaded. file={fileName}");
                 }
-
             }
             catch (Exception ex)
             {
@@ -336,7 +339,7 @@ namespace SuperPutty
                 sessionsList.Remove(session);
                 Log.InfoFormat($"Removed Session, id={session}, success=true");
                 return true;
-            }            
+            }
             return false;
         }
 
@@ -460,7 +463,8 @@ namespace SuperPutty
                     }
                 };
 
-                try {
+                try
+                {
                     panel = new ctlPuttyPanel(session, callback);
 
                     ApplyDockRestrictions(panel);
@@ -473,7 +477,7 @@ namespace SuperPutty
                         string fileName = session.SPSLFileName;
                         string script = string.Empty;
 
-                        if(Regex.IsMatch(fileName, @"^https?:\/\/", RegexOptions.IgnoreCase))
+                        if (Regex.IsMatch(fileName, @"^https?:\/\/", RegexOptions.IgnoreCase))
                         {
                             try
                             {
@@ -484,7 +488,7 @@ namespace SuperPutty
                                     script = stream.ReadToEnd();
                                 }
                             }
-                            catch(Exception)
+                            catch (Exception)
                             {
                                 script = String.Empty;
                             }
@@ -508,7 +512,8 @@ namespace SuperPutty
                             SPSL.BeginExecuteScript(scriptArgs);
                         }
                     }
-                } catch (InvalidOperationException ex)
+                }
+                catch (InvalidOperationException ex)
                 {
                     MessageBox.Show("Error trying to create session " + ex.Message, "Failed to create session panel", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -702,7 +707,7 @@ namespace SuperPutty
                 if (sessionExisting == null)
                 {
                     break;
-                }                
+                }
                 newSessionId = string.Format("{0}-{1}", sessionId, i);
             }
 
@@ -719,7 +724,7 @@ namespace SuperPutty
         public static ImageList LoadImageList(string theme, bool isEnableStopImage)
         {
             ImageList imgIcons = new ImageList();
-            
+
             if (isEnableStopImage)
                 imgIcons.Images.Add("stop", Resources.stop);
             // Load the 2 standard icons in case no icons exist in icons directory, these will be used.
@@ -795,7 +800,8 @@ namespace SuperPutty
 
         #region Properties
         /// <summary>true if the application has not defined where the required putty program is located</summary>
-        public static bool IsFirstRun {
+        public static bool IsFirstRun
+        {
             get
             {
                 if (isFirstRun == null)
@@ -819,7 +825,7 @@ namespace SuperPutty
         public static string Version { get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(); } }
 
         internal static Settings Settings { get { return Settings.Default; } }
-        public static frmSuperPutty MainForm { get; set; }        
+        public static frmSuperPutty MainForm { get; set; }
         public static string LayoutsDir { get { return Path.Combine(Settings.SettingsFolder, "layouts"); } }
         public static LayoutData CurrentLayout { get; private set; }
         public static LayoutData StartingLayout { get; private set; }
@@ -881,7 +887,7 @@ namespace SuperPutty
         OpenScriptEditor,
         /// <summary>Rename active tab</summary>
         RenameTab
-    } 
+    }
     #endregion
 
 }
